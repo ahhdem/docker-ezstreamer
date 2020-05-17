@@ -1,0 +1,15 @@
+icecast:
+  image: stephanel/icecast-kh:latest
+  volumes:
+  - logs:/var/log/icecast
+  - /etc/localtime:/etc/localtime:ro 
+  environment:
+  - ICECAST_SOURCE_PASSWORD=changeme
+  - ICECAST_ADMIN_PASSWORD=changeme
+  - ICECAST_PASSWORD=changeme
+  - ICECAST_RELAY_PASSWORD=changeme
+  - ICECAST_LOCATION=Earth
+  - ICECAST_ADMIN=john@doe.com
+  - ICECAST_HOSTNAME=stream.doe.com
+  ports:
+  - 8000:8000

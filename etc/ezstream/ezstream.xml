@@ -1,0 +1,33 @@
+<ezstream>
+
+  <servers>
+    <server>
+      <name>icecast</name>
+      <hostname>localhost</hostname>
+      <password>ICECAST_SOURCE_PASSWORD</password>
+    </server>
+  </servers>
+
+  <streams>
+    <stream>
+      <mountpoint>ICECAST_EZSTREAM_MOUNT</mountpoint>
+      <format>MP3</format>
+      <public>No</public>
+
+      <server>icecast</server>
+      <stream_name>ICECAST_STREAM_NAME will be right back</stream_name>
+      <stream_url>ICECAST_STREAM_URL</stream_url>
+      <stream_genre>downtempo</stream_genre>
+      <stream_description>Please wait...</stream_description>
+      <stream_bitrate>256</stream_bitrate>
+      <stream_samplerate>44100</stream_samplerate>
+      <stream_channels>2</stream_channels>
+    </stream>
+  </streams>
+
+  <intakes>
+    <intake>
+      <filename>/silence.mp3</filename>
+    </intake>
+  </intakes>
+</ezstream>

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+stream=$1
+
+[ -n "$stream" ] && {
+   kill -SIGUSR1 $(cat /tmp/${stream}.pid)
+} || { echo "A stream name is required"; exit 1; }
