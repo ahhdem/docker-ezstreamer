@@ -3,7 +3,7 @@ SUPERVISE_INTERVAL=2
 LOG_ROOT=${LOG_ROOT:-/var/log/ezstreamer}
 DEBUG=${DEBUG:-true}
 TMPDIR=$(mktemp -d)
-ln -s /tmp/pids $TMPDIR
+ln -s $TMPDIR /tmp/pids
 
 function cleanup() {
   rm -rf $TMPDIR
