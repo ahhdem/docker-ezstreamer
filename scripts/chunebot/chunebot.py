@@ -13,7 +13,7 @@ There are a number of utility commands being showcased here.'''
 bot = commands.Bot(command_prefix='?', description=description)
 
 async def findStream(stream):
-    url = 'http://icecast:8000/%s.xspf' % stream
+    url = 'http://STREAM_HOST:STREAM_PORT/%s.xspf' % stream
     file = request.urlopen(url)
     data = file.read()
     file.close()

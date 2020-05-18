@@ -5,6 +5,7 @@ ENV STREAM_URL "http://stream.mysite.com"
 ENV STREAM_NAME "Tremendous Radio"
 ENV STREAM_PASSWORD "wowsoSecure"
 ENV STREAM_HOST "icecast"
+ENV STREAM_PORT "8000"
 ENV STREAM_GENRE "Polka"
 ENV STREAM_DESCRIPTION "Probably the best thing anyone has ever heard, maybe ever."
 

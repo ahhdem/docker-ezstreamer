@@ -26,6 +26,7 @@ function tokenizeConfigForStream() {
   # Tokenize config
   sed -i'' \
     -e "s/STREAM_HOST/${STREAM_HOST}/g" \
+    -e "s/STREAM_PORT/${STREAM_PORT}/g" \
     -e "s/STREAM_PASSWORD/${STREAM_PASSWORD}/g" \
     -e "s/STREAM_MOUNT/${STREAM_MOUNT}/g" \
     -e "s|STREAM_URL|${STREAM_URL}|g" \
@@ -57,6 +58,8 @@ function initConfig() {
   chunebot)
     sed -i \
       -e "s/CHUNEBOT_TOKEN/${CHUNEBOT_TOKEN}/g" \
+      -e "s/STREAM_HOST/${STREAM_HOST}/g" \
+      -e "s/STREAM_PORT/${STREAM_PORT}/g" \
       -e "s|STREAM_URL|${STREAM_URL}|g" \
       /chunebot/chunebot.py
   esac

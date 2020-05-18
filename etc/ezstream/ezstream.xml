@@ -3,6 +3,7 @@
   <servers>
     <server>
       <name>icecast</name>
+      <port>STREAM_PORT</port>
       <hostname>STREAM_HOST</hostname>
       <password>STREAM_PASSWORD</password>
     </server>
