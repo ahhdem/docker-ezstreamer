@@ -15,7 +15,7 @@
       <format>MP3</format>
       <public>No</public>
       <encoder>Lame-CBR256</encoder>
-      <intake>playlistpicker</intake>
+      <intake>selecta-6000</intake>
 
       <server>icecast</server>
       <stream_name>STREAM_NAME</stream_name>
@@ -30,9 +30,9 @@
 
   <intakes>
     <intake>
-      <name>playlistpicker</name>
+      <name>selecta-6000</name>
       <type>program</type>
-      <filename>/playlist.sh</filename>
+      <filename>/selecta-6000.sh</filename>
     </intake>
   </intakes>
 
