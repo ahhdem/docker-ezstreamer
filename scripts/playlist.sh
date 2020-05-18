@@ -23,7 +23,10 @@ function selecta() {
   # randomly play commercials 10 percent of the time
   random_chance=10
   ! (($(shuf -i 0-100 -n1) % $random_chance)) \
-    && _playlist='commercials' \
+    && {
+       echo "And now, a word from our sponsors...";
+       _playlist='commercials' \;
+     } \
     || _playlist="${PLAYLISTS[$RANDOM % ${#PLAYLISTS[@]}]}"
   shuf ${PLAYLIST_DIR}/${_playlist}.m3u -n 1
 }

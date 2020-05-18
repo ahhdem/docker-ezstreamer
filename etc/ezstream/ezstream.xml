@@ -46,7 +46,7 @@
       <!-- Decoder name -->
       <name>OggDec</name>
       <!-- Program and options -->
-      <program>oggdec -R -b 16 -e 1 -s 1 -o - @T@</program>
+      <program>oggdec -Q -R -b 16 -e 1 -s 1 -o - @T@</program>
       <!-- File extensions to use this decoder for -->
       <file_ext>.ogg</file_ext>
       <file_ext>.oga</file_ext>
@@ -58,7 +58,7 @@
     </decoder>
     <decoder>
       <name>MadPlay</name>
-      <program>madplay -b 16 -R 44100 -S -o raw:- @T@</program>
+      <program>madplay -q -b 16 -R 44100 -S -o raw:- @T@</program>
       <file_ext>.mp3</file_ext>
     </decoder>
   </decoders>
@@ -67,7 +67,7 @@
     <encoder>
       <name>Lame-CBR256</name>
       <format>mp3</format>
-      <program>lame --preset cbr 256 -r -s 44.1 --bitwidth 16 - -</program>
+      <program>lame --quiet --preset cbr 256 -r -s 44.1 --bitwidth 16 - -</program>
     </encoder>
   </encoders>
 </ezstream>
