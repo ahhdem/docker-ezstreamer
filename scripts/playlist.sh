@@ -19,7 +19,13 @@ echo "$STREAMER_CMD" |grep -q $FALLBACK_STREAM && {
 }
 
 function selecta() {
-  shuf ${PLAYLIST_DIR}/${PLAYLISTS[$RANDOM % ${#PLAYLISTS[@]}]}.m3u -n 1
+  local _playlist=''
+  # randomly play commercials 10 percent of the time
+  random_chance=10
+  ! (($(shuf -i 0-100 -n1) % $random_chance)) \
+    && _playlist='commercials' \
+    || _playlist="${PLAYLISTS[$RANDOM % ${#PLAYLISTS[@]}]}"
+  shuf ${PLAYLIST_DIR}/${_playlist}.m3u -n 1
 }
 
 next=${LOG_ROOT}/next
