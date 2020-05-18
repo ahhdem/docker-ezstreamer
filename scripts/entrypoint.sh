@@ -1,7 +1,8 @@
 #!/usr/bin/dumb-init /bin/bash
 SUPERVISE_INTERVAL=2
+id
 
-LOG_ROOT=${LOG_ROOT:-/var/log/ezstreamer/}
+LOG_ROOT=${LOG_ROOT:-/var/log/ezstreamer}
 [ -e $LOG_ROOT ] || mkdir -p ${LOG_ROOT}
 declare -A LOGS=( [bad_song]=${LOG_ROOT}/bad_songs.log [missing]=${LOG_ROOT}/missing_songs.log [repair]=${LOG_ROOT}/file_repair.log [failed]=${LOG_ROOT}/failed_repair.log )
 for log in ${LOGS[@]}; do touch $log; done
@@ -40,7 +41,7 @@ function ezstreamer() {
   for stream in $AUTOSTREAMS; do
     supervise ezstream ezstream -c /config/ezstream-${stream}.xml&
   done
-  supervise chunebot python3 /chunebot.py&
+  $($USE_CHUNEBOT) && supervise chunebot python3 /chunebot.py&
 }
 
 function invalid() {
@@ -77,10 +78,7 @@ function fixBadSongs() {
   done
 }
 
-if [ -n "$USE_EZSTREAM" ]
-then
-  /tokenize.sh
-  ezstreamer
-fi
+/tokenize.sh
+ezstreamer
 
 exec "$@"

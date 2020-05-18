@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FALLBACK_STREAM=${FALLBACK_STREAM:-brb}
-PLAYLISTS=($EZSTREAM_PLAYLISTS)
+PLAYLISTS=($ICECAST_RADIO_PLAYLISTS)
 MEDIA_DIR=${MEDIA_DIR:-/var/lib/mopidy/media}
 PLAYLIST_DIR=${PLAYLIST_DIR:-/var/lib/mopidy/playlists}
 
@@ -11,6 +11,7 @@ BAD_SONG_LOG=${BAD_SONG_LOG:-${LOG_ROOT}/bad_songs.log}
 STREAMER_CMD=($(ps -o cmd= $(ps -o ppid= $PPID)))
 
 # If we are called by the brb streamer 
+# TODO: pull playlists for multiple streams from ICECAST_$STREAM_PLAYLISTS
 echo $STREAMER_CMD |grep $FALLBACK_STREAM && {
   # Pick a random commercial
   ls ${MEDIA_DIR}/commercials | shuf -n 1
