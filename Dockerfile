@@ -20,7 +20,6 @@ COPY etc/ezstream /etc/ezstream
 COPY scripts /
 COPY silence.mp3 /
 
-EXPOSE 8000
 VOLUME ["/config", "/var/log/ezstreamer" ]
 USER ezstream
 ENTRYPOINT ["/usr/bin/dumb-init", "/start.sh"]
