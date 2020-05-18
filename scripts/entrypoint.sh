@@ -1,8 +1,23 @@
 #!/usr/bin/dumb-init /bin/bash
 SUPERVISE_INTERVAL=2
-id
-
 LOG_ROOT=${LOG_ROOT:-/var/log/ezstreamer}
+DEBUG=${DEBUG:-true}
+TMPDIR=$(mktemp -d)
+ln -s /tmp/pids $TMPDIR
+
+function cleanup() {
+  rm -rf $TMPDIR
+  rm -rf /tmp/pids/
+}
+
+trap cleanup EXIT
+
+function logger() {
+  local _msg="$1"
+  local _sev="${2:-DEBUG}"
+  $($DEBUG) && echo -e "[${_sev}] ${_msg}"
+}
+
 [ -e $LOG_ROOT ] || mkdir -p ${LOG_ROOT}
 declare -A LOGS=( [bad_song]=${LOG_ROOT}/bad_songs.log [missing]=${LOG_ROOT}/missing_songs.log [repair]=${LOG_ROOT}/file_repair.log [failed]=${LOG_ROOT}/failed_repair.log )
 for log in ${LOGS[@]}; do touch $log; done
@@ -13,16 +28,19 @@ function supervise() {
   local _unit=$1
   shift
   local _cmd=$@
-  while sleep $SUPERVISE_INTERVAL; do
+  echo "Starting ${_unit} with ${_cmd}"
+  while sleep ${SUPERVISE_INTERVAL}; do
+    logger "Supervising ${_unit}"
     # run command
     exec ${_cmd}&
     local _pid=$!
     # Drop pid to manage process
-    echo $_pid > /tmp/${_unit}.pid
+    echo $_pid > ${TMPDIR}/${_unit}.pid
     # Resume waiting for process
     tail --pid $_pid -f /dev/null
     echo "Restarting ${_unit}.."
   done
+  echo "Done"
 }
 
 # EZstreamer [via playlist.sh, called in exstreamer-${stream}.xml], will log files not detected as audio to {LOGS['bad_song']}
@@ -39,9 +57,9 @@ function ezstreamer() {
   tail -f ${LOGS['repair']}&
 
   for stream in $AUTOSTREAMS; do
-    supervise ezstream ezstream -c /config/ezstream-${stream}.xml&
+    supervise $stream ezstream -c /config/ezstream-${stream}.xml&
   done
-  $($USE_CHUNEBOT) && supervise chunebot python3 /chunebot.py&
+  $($USE_CHUNEBOT) && supervise chunebot python3 /chunebot/chunebot.py&
 }
 
 function invalid() {
@@ -80,5 +98,7 @@ function fixBadSongs() {
 
 /tokenize.sh
 ezstreamer
-
-exec "$@"
+streams=($AUTOSTREAMS)
+sleep 10
+_pid=$(cat ${TMPDIR}/${streams[0]}.pid)
+tail --pid $_pid -f /dev/null

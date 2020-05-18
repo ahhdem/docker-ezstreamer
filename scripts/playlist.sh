@@ -1,20 +1,20 @@
 #!/bin/bash
 
 FALLBACK_STREAM=${FALLBACK_STREAM:-brb}
-PLAYLISTS=($ICECAST_RADIO_PLAYLISTS)
-MEDIA_DIR=${MEDIA_DIR:-/var/lib/mopidy/media}
-PLAYLIST_DIR=${PLAYLIST_DIR:-/var/lib/mopidy/playlists}
+PLAYLISTS=($STREAM_RADIO_PLAYLISTS)
+MEDIA_DIR=${MEDIA_DIR:-/media}
+PLAYLIST_DIR=${PLAYLIST_DIR:-/media/playlists}
 
 LOG_ROOT=${LOG_ROOT:-/config/}
 BAD_SONG_LOG=${BAD_SONG_LOG:-${LOG_ROOT}/bad_songs.log}
 # Get the command of the streamer process calling us
-STREAMER_CMD=($(ps -o cmd= $(ps -o ppid= $PPID)))
+STREAMER_CMD=$(ps -o cmd= $(ps -o ppid= $PPID))
 
 # If we are called by the brb streamer 
-# TODO: pull playlists for multiple streams from ICECAST_$STREAM_PLAYLISTS
-echo $STREAMER_CMD |grep $FALLBACK_STREAM && {
+# TODO: pull playlists for multiple streams from STREAM_$STREAM_PLAYLISTS
+echo "$STREAMER_CMD" |grep -q $FALLBACK_STREAM && {
   # Pick a random commercial
-  ls ${MEDIA_DIR}/commercials | shuf -n 1
+  find ${MEDIA_DIR}/commercials | shuf -n 1
   exit 0;
 }
 

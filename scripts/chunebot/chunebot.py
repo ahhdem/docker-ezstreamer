@@ -42,20 +42,20 @@ async def getStreamStatus():
 
 async def nowPlaying():
     current = ''
-    while current is '':
+    while current == '':
         current = run(['/bin/cat', '/config/now-playing'], capture_output=True, text=True).stdout
 
     path_bits=current.split('/')
     return '/'.join(path_bits[5:])
 
 
-async def skipTo(song='', stream='ezstream'):
+async def skipTo(song='', stream='radio'):
     if (song):
        await setNextTrack(song)
     skipped=await nowPlaying()
     current=skipped
     run(['/next', stream])
-    if (song is 'now-playing'):
+    if (song == 'now-playing'):
         # Dont wait for song change if restarting
         return (skipped, current)
     # Wait for the song to change
@@ -75,10 +75,10 @@ async def on_ready():
 
 
 @bot.command()
-async def next(ctx):
+async def next(ctx, stream="radio"):
     """Skips to next song"""
     print("Skipping track")
-    await ctx.send('Skipped %s - Now playing: %s' % await skipTo())
+    await ctx.send('Skipped %s - Now playing: %s' % await skipTo(stream=stream))
 
 
 @bot.command()
@@ -88,25 +88,25 @@ async def playing(ctx):
 
 
 @bot.command()
-async def back(ctx):
+async def back(ctx, stream='radio'):
     """Restarts current radio song"""
     print("Restarting track")
-    (skipped, current) = await skipTo('now-playing')
+    (skipped, current) = await skipTo('now-playing', stream)
     await ctx.send('Restarting: %s' % current)
 
 
 @bot.command()
-async def prev(ctx):
+async def prev(ctx, stream='radio'):
     """Restarts current radio song (there is no back!)"""
     print("Playing previous track")
-    await ctx.send('Skipped %s - Now playing: %s' % await skipTo('previous'))
+    await ctx.send('Skipped %s - Now playing: %s' % await skipTo('previous', stream))
 
 @bot.command()
 async def stats(ctx):
     """Gets current stream stats"""
     print("Fetching stats")
     status = await getStreamStatus()
-    msg = 'Tune in!  https://ICECAST_HOST/{stream}\nNow Playing: {creator} - {title}\nListeners: {listeners}\nQuality: {bitrate}kbps'.format(
+    msg = 'Tune in!  STREAM_URL\nNow Playing: {creator} - {title}\nListeners: {listeners}\nQuality: {bitrate}kbps'.format(
             stream='live', #status['stream'],
             creator=status['creator'],
             title=status['title'],

@@ -3,22 +3,24 @@
   <servers>
     <server>
       <name>icecast</name>
-      <hostname>ICECAST_HOST</hostname>
-      <password>ICECAST_PASSWORD</password>
+      <hostname>STREAM_HOST</hostname>
+      <password>STREAM_PASSWORD</password>
     </server>
   </servers>
 
   <streams>
     <stream>
-      <mountpoint>ICECAST_MOUNT</mountpoint>
+      <mountpoint>STREAM_MOUNT</mountpoint>
       <format>MP3</format>
       <public>No</public>
+      <encoder>Lame-CBR256</encoder>
+      <intake>playlistpicker</intake>
 
       <server>icecast</server>
-      <stream_name>ICECAST_NAME will be right back</stream_name>
-      <stream_url>ICECAST_URL</stream_url>
-      <stream_genre>downtempo</stream_genre>
-      <stream_description>Please wait...</stream_description>
+      <stream_name>STREAM_NAME</stream_name>
+      <stream_url>STREAM_URL</stream_url>
+      <stream_genre>STREAM_GENRE</stream_genre>
+      <stream_description>STREAM_DESCRIPTION</stream_description>
       <stream_bitrate>256</stream_bitrate>
       <stream_samplerate>44100</stream_samplerate>
       <stream_channels>2</stream_channels>
@@ -27,7 +29,44 @@
 
   <intakes>
     <intake>
+      <name>playlistpicker</name>
+      <type>program</type>
+      <filename>/playlist.sh</filename>
+    </intake>
+  </intakes>
+
+  <intakes>
+    <intake>
       <filename>/silence.mp3</filename>
     </intake>
   </intakes>
+  <decoders>
+    <decoder>
+      <!-- Decoder name -->
+      <name>OggDec</name>
+      <!-- Program and options -->
+      <program>oggdec -R -b 16 -e 1 -s 1 -o - @T@</program>
+      <!-- File extensions to use this decoder for -->
+      <file_ext>.ogg</file_ext>
+      <file_ext>.oga</file_ext>
+    </decoder>
+    <decoder>
+      <name>Flac</name>
+      <program>flac -F -s -d --force-raw-format --sign=signed --endian=little -o - @T@</program>
+      <file_ext>.flac</file_ext>
+    </decoder>
+    <decoder>
+      <name>MadPlay</name>
+      <program>madplay -b 16 -R 44100 -S -o raw:- @T@</program>
+      <file_ext>.mp3</file_ext>
+    </decoder>
+  </decoders>
+
+  <encoders>
+    <encoder>
+      <name>Lame-CBR256</name>
+      <format>mp3</format>
+      <program>lame --preset cbr 256 -r -s 44.1 --bitwidth 16 - -</program>
+    </encoder>
+  </encoders>
 </ezstream>

@@ -12,7 +12,7 @@ $BROWSER localhost:8000
 Run with custom password
 
 ```bash
-docker run -p 8000:8000 -e ICECAST_SOURCE_PASSWORD=aaaa -e ICECAST_ADMIN_PASSWORD=bbbb -e ICECAST_PASSWORD=cccc -e ICECAST_RELAY_PASSWORD=dddd ahhdem/docker-ezstreamer
+docker run -p 8000:8000 -e STREAM_PASSWORD=aaaa -e STREAM_PASSWORD=bbbb ahhdem/docker-ezstreamer
 ```
 
 Run with custom configuration
@@ -36,16 +36,13 @@ ezstreamer:
   volumes:
   - logs:/var/log/ezstreamer
   - /etc/localtime:/etc/localtime:ro
+  - /path/to/your/media:/media
   environment:
-  - ICECAST_SOURCE_PASSWORD=aaa
-  - ICECAST_ADMIN_PASSWORD=bbb
-  - ICECAST_PASSWORD=ccc
-  - ICECAST_RELAY_PASSWORD=ddd
-  - ICECAST_LOCATION=Earth
-  - ICECAST_ADMIN=john@doe.com
-  - ICECAST_HOSTNAME=stream.doe.com
-  ports:
-  - 8000:8000
+  - STREAM_PASSWORD=ccc
+  - STREAM_LOCATION=Earth
+  - STREAM_ADMIN=john@doe.com
+  - STREAM_HOSTNAME=stream.doe.com
+  - STREAM_PORT
 ```
 
 ## License
