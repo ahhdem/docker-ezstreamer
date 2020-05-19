@@ -28,9 +28,9 @@ function commercial() {
 
 function selecta() {
   local _playlist=''
-  commercial && _playlist='commercials';
-   #    logger "And now, a word from our sponsors..." info >$LOGFIFO;
   _playlist="${PLAYLISTS[$RANDOM % ${#PLAYLISTS[@]}]}";
+  commercial && _playlist='commercials';
+  # logger "And now, a word from our sponsors..." info >$LOGFIFO;
 
   local _selection=$(shuf ${PLAYLIST_DIR}/${_playlist}.m3u -n 1)
   echo $_selection
