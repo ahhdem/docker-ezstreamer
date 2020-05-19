@@ -42,10 +42,11 @@ async def getStreamStatus():
     return details
 
 
-async def nowPlaying():
+async def nowPlaying(stream='radio'):
     current = ''
     while current == '':
-        with open('%s/now-playing' % LOG_ROOT , 'r') as f:
+        now_playing = '%s/now-playing-%s' % (LOG_ROOT, stream)
+        with open(now_playing, 'r') as f:
             x = f.readlines()
             try:
                 current = x[0]
@@ -58,8 +59,8 @@ async def nowPlaying():
 
 async def skipTo(song='', stream='radio'):
     if (song):
-       await setNextTrack(song)
-    skipped=await nowPlaying()
+       await setNextTrack(song, stream)
+    skipped=await nowPlaying(stream)
     current=skipped
     run(['/next', stream])
     if (song == 'now-playing'):
@@ -67,19 +68,20 @@ async def skipTo(song='', stream='radio'):
         return (skipped, current)
     # Wait for the song to change
     while current == skipped:
-        current = await nowPlaying()
+        current = await nowPlaying(stream)
 
     return (skipped, current)
 
 
-async def setNextTrack(track):
-    run(['cp','%s/%s' % [LOG_ROOT, track], '%s/next' % LOG_ROOT])
+async def setNextTrack(track, stream):
+    run(['cp','%s/%s' % (LOG_ROOT, track), '%s/next-%s' % (LOG_ROOT, stream)])
     return True
 
 @bot.event
 async def on_ready():
     print('Logged in as %s (uid: %d)' % (bot.user.name, bot.user.id))
 
+# Ensure context in message events (enables bot chatter)
 @bot.event
 async def on_message(message):
     ctx = await bot.get_context(message)
@@ -93,9 +95,9 @@ async def next(ctx, stream="radio"):
 
 
 @bot.command()
-async def playing(ctx):
+async def playing(ctx, stream='radio'):
     """Show currently playing track"""
-    await ctx.send('Now playing: %s' % (await nowPlaying()))
+    await ctx.send('Now playing: %s' % (await nowPlaying(stream)))
 
 
 @bot.command()
@@ -111,6 +113,19 @@ async def prev(ctx, stream='radio'):
     """Restarts current radio song (there is no back!)"""
     print("Playing previous track")
     await ctx.send('Skipped %s - Now playing: %s' % await skipTo('previous', stream))
+
+
+@bot.command()
+async def yt(ctx, stream='radio'):
+    """Triggers fmbot to search youtube for current track by filename """
+    # TODO provide switch between file and metadata
+    path = await nowPlaying(stream)
+    print("got path: %s" % path)
+    terms = path[-1].split('.')[0]
+    print("got terms: %s" % terms)
+    
+    await ctx.send('.fmyt %s' % terms)
+
 
 @bot.command()
 async def stats(ctx):

@@ -2,6 +2,7 @@
 . util.sh
 [ -z "${CHUNEBOT_TOKEN}" ] && { echo "CHUNEBOT_TOKEN is missing"; exit 1; }
 OVERWRITE_CONFIG=${OVERWRITE_CONFIG:-false}
+TMPDIR="/tmp/pids/"
 
 function tokenizeConfigForStream() {
   local _stream=$(echo $1|tr '[:lower:]' '[:upper:]')
@@ -13,7 +14,8 @@ function tokenizeConfigForStream() {
     local _dst="STREAM_${_key}"
     # Copy _src var contents to _dst var
     # Fallback to _src (STREAM_${_key}) if no stream-specific entry is present
-    declare "STREAM_${_key}=${!_src:-${!_dst}}"
+    # Sed is to sanitze values for later sed
+    declare "STREAM_${_key}=$(sed -e 's/[]\/$*.^[]/\\&/g' <<< ${!_src:-${!_dst}})"
     [ -z "${!_dst}" ] && { echo "${_dst} variable undefined for $_stream"; exit 1; }
   done
  

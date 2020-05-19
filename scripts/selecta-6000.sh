@@ -2,7 +2,6 @@
 . util.sh
 exec 2> ${LOG_ROOT}/playlist.err
 FALLBACK_STREAM=${FALLBACK_STREAM:-brb}
-PLAYLISTS=($STREAM_RADIO_PLAYLISTS)
 MEDIA_DIR=${MEDIA_DIR:-/media}
 PLAYLIST_DIR=${PLAYLIST_DIR:-/media/playlists}
 BAD_SONG_LOG=${BAD_SONG_LOG:-${LOG_ROOT}/bad_songs.log}
@@ -10,19 +9,15 @@ BAD_SONG_LOG=${BAD_SONG_LOG:-${LOG_ROOT}/bad_songs.log}
 [ -z "$LOG_ROOT" ] && { echo "ERROR: LOG_ROOT is empty: ${LOG_ROOT}"; exit 1; }
 
 # Get the command of the streamer process calling us
-STREAMER_CMD=${1:-$(ps -o cmd= $(ps -o ppid= $PPID))}
-
-# If we are called by the brb streamer 
-# TODO: pull playlists for multiple streams from STREAM_$STREAM_PLAYLISTS
-echo "$STREAMER_CMD" |grep -q $FALLBACK_STREAM && {
-  # Pick a random commercial
-  _selection=$(shuf ${PLAYLIST_DIR}/commercials.m3u -n 1)
-  echo ${MEDIA_DIR}/${_selection}
-  exit 0;
-}
+STREAMER=${1:-$(ps -o cmd= $(ps -o ppid= $PPID)|cut -d\- -f 3|cut -d. -f1)}
+PLAYLIST_VAR="STREAM_${STREAMER^^}_PLAYLISTS"
+#echo "Computed $PLAYLIST_VAR for $STREAMER_CMD" >> ${LOG_ROOT}/playlist.err
+PLAYLISTS=(${!PLAYLIST_VAR})
 
 # randomly play commercials 10 percent of the time
 function commercial() {
+  # Dont evaluate on fallback stream (or we would flip the logic and pull from other p
+  #grep -i "${STREAMER_CMD}" <<< $FALLBACK_STREAM && return 1
   random_chance=10
   ! (($(shuf -i 0-100 -n1) % $random_chance))
 }
@@ -69,6 +64,6 @@ done
 
 # TODO: fix piping to logger
 #logger "Selected: ${song}" info >$LOGFIFO
-now_playing=${LOG_ROOT}/now-playing
-[ -e $now_playing ] && cp $now_playing ${LOG_ROOT}/previous
+now_playing=${LOG_ROOT}/now-playing-${STREAMER}
+[ -e $now_playing ] && cp $now_playing ${LOG_ROOT}/previous-${STREAMER}
 echo "${song}" |tee $now_playing
