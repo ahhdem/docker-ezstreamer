@@ -29,11 +29,11 @@ RUN mv /etc/apt/sources.list /etc/apt/sources.list.d/stable.list \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* ~/.cache /etc/ezstream.xml
 
+COPY scripts /
 RUN useradd stream \
  && mkdir -p /config /var/log/ezstreamer \
  && chown -R stream /chunebot /config /var/log/ezstreamer /etc/ezstream
 
-COPY scripts /
 COPY silence.mp3 /
 
 USER stream

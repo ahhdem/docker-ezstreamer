@@ -1,33 +1,39 @@
 #!/bin/bash
+. util.sh
 FALLBACK_STREAM=${FALLBACK_STREAM:-brb}
 PLAYLISTS=($STREAM_RADIO_PLAYLISTS)
 MEDIA_DIR=${MEDIA_DIR:-/media}
 PLAYLIST_DIR=${PLAYLIST_DIR:-/media/playlists}
 BAD_SONG_LOG=${BAD_SONG_LOG:-${LOG_ROOT}/bad_songs.log}
+# Prevent respawnbomb
+[ -z "$LOG_ROOT" ] && { echo "ERROR: LOG_ROOT is empty: ${LOG_ROOT}"; exit 1; }
 
 # Get the command of the streamer process calling us
-STREAMER_CMD=$(ps -o cmd= $(ps -o ppid= $PPID))
+STREAMER_CMD=${1:-$(ps -o cmd= $(ps -o ppid= $PPID))}
 
 # If we are called by the brb streamer 
 # TODO: pull playlists for multiple streams from STREAM_$STREAM_PLAYLISTS
 echo "$STREAMER_CMD" |grep -q $FALLBACK_STREAM && {
   # Pick a random commercial
-  find ${MEDIA_DIR}/commercials | shuf -n 1
+  _selection=$(shuf ${PLAYLIST_DIR}/commercials.m3u -n 1)
+  echo ${MEDIA_DIR}/${_selection}
   exit 0;
+}
+
+# randomly play commercials 10 percent of the time
+function commercial() {
+  random_chance=10
+  ! (($(shuf -i 0-100 -n1) % $random_chance))
 }
 
 function selecta() {
   local _playlist=''
-  # randomly play commercials 10 percent of the time
-  random_chance=10
-  ! (($(shuf -i 0-100 -n1) % $random_chance)) \
-    && {
-       logger "And now, a word from our sponsors..." > $LOGFIFO
-       _playlist='commercials' \;
-     } \
-    || _playlist="${PLAYLISTS[$RANDOM % ${#PLAYLISTS[@]}]}"
+  commercial && _playlist='commercials';
+   #    logger "And now, a word from our sponsors..." info >$LOGFIFO;
+  _playlist="${PLAYLISTS[$RANDOM % ${#PLAYLISTS[@]}]}";
 
-   local _selection=$(shuf ${PLAYLIST_DIR}/${_playlist}.m3u -n 1)
+  local _selection=$(shuf ${PLAYLIST_DIR}/${_playlist}.m3u -n 1)
+  echo $_selection
 }
 
 next=${LOG_ROOT}/next
@@ -42,9 +48,10 @@ next=${LOG_ROOT}/next
   # 2: has valid audio file headers
 until [ -e "$song" ] && (file --mime-type "$song" |grep audio >/dev/null); do
   # If song isnt empty (above conditions werent satisfied:
-    # Log song to bad song file and init-logger:info
-    [ -n "$song" ] && logger $(echo "Skipping 'unplayable' $song" |tee $BAD_SONG_LOG) info >$LOGFIFO
   # Get potential selection
+    # Log song to bad song file and init-logger:info
+    #[ -n "$song" ] && logger $(echo "Skipping 'unplayable' $song" |tee $BAD_SONG_LOG) info >$LOGFIFO
+    [ -n "$song" ] && echo "Skipping 'unplayable' $song" >> $BAD_SONG_LOG
   candidate=$(selecta)
   # Ensure we haven't already marked it as bad
   while grep -q "$candidate" $BAD_SONG_LOG; do
@@ -55,7 +62,7 @@ until [ -e "$song" ] && (file --mime-type "$song" |grep audio >/dev/null); do
   song="${MEDIA_DIR}/${candidate}"
 done
 
-logger "Selected: ${song}" >$LOGFIFO
+#logger "Selected: ${song}" info >$LOGFIFO
 now_playing=${LOG_ROOT}/now-playing
 [ -e $now_playing ] && cp $now_playing ${LOG_ROOT}/previous
 echo "${song}" |tee $now_playing

@@ -1,12 +1,15 @@
-#!/usr/bin/dumb-init /bin/bash
-. util.sh
+#!/bin/bash
+. /util.sh
 # Capture logs from other scripts (selecta-6000.sh)
+echo "Logging to ${LOG_ROOT}"
 tail -f $LOGFIFO&
-ln -s $TMPDIR /tmp/pids
+[ -d /tmp/pids ] || ln -s $TMPDIR/ /tmp/pids
 
 function local_cleanup() {
   rm -rf /tmp/pids/
 }
+
+trap local_cleanup EXIT
 
 declare -A LOGS=( [bad_song]=${LOG_ROOT}/bad_songs.log [missing]=${LOG_ROOT}/missing_songs.log [repair]=${LOG_ROOT}/file_repair.log [failed]=${LOG_ROOT}/failed_repair.log )
 for log in ${LOGS[@]}; do touch $log; done
@@ -25,9 +28,9 @@ function ezstreamer() {
   tail -f ${LOGS['repair']}&
 
   for stream in $AUTOSTREAMS; do
-    supervise $stream ezstream -c /config/ezstream-${stream}.xml |logStream&
+    supervise $stream ezstream -c /config/ezstream-${stream}.xml | tee| logStream $stream info&
   done
-  $($USE_CHUNEBOT) && supervise chunebot python3 /chunebot/chunebot.py|logStream&
+  $($USE_CHUNEBOT) && supervise chunebot python3 /chunebot/chunebot.py | logStream chunebot info&
 }
 
 function invalid() {
@@ -64,6 +67,7 @@ function fixBadSongs() {
   done
 }
 
+logger "Running as: $(id)"
 /tokenize.sh
 ezstreamer
 streams=($AUTOSTREAMS)

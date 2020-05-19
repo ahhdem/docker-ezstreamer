@@ -1,5 +1,10 @@
 DEBUG=${DEBUG:-true}
 TMPDIR=$(mktemp -d)
+LOG_ROOT=${LOG_ROOT:-/var/log/ezstreamer}
+LOGLEVEL=${LOGLEVEL:-info}
+LOGFIFO="${LOGFIFO:-${TMPDIR}/init-logger.fifo}"
+SUPERVISE_RESPAWN_INTERVAL=${SUPERVISE_RESPAWN_INTERVAL:-2}
+LOGLEVELS=("debug" "info" "warn" "error")
 
 function cleanup() {
   rm -rf $TMPDIR
@@ -24,19 +29,15 @@ function indexOf() {
 
 #@idempotent
 function initLogger() {
-  LOG_ROOT=${LOG_ROOT:-/var/log/ezstreamer}
-  LOGLEVEL=${LOGLEVEL:-info}
   # TODO: Make LOGLEVELS overrideable
-  LOGLEVELS=("debug" "info" "warn" "error")
-  LOGFIFO="${LOGFIFO:-${TMPDIR}/init-logger.fifo}"
-  [ -e $LOG_ROOT ] || mkdir -p ${LOG_ROOT}
-  [ -e $LOGFIFO ] || mkfifo ${LOGFIFO}
+  [ ! -d $LOG_ROOT ] && mkdir -p ${LOG_ROOT}
+  [ ! -p $LOGFIFO ] && mkfifo ${LOGFIFO}
 }
 
 function getLoglevelIndex() {
   local _level=$1
 
-  echo $(indexOf $_level "${LOGLEVELS[@]}")
+  echo $(indexOf ${_level,,} "${LOGLEVELS[@]}")
 }
 
 # returns true for valid loglevels
@@ -49,10 +50,10 @@ function loggingAt() {
 
 function logger() {
   local _msg="$1"
-  local _sev="${2:-DEBUG}"
+  local _sev="${2:-debug}"
   local _facility="${3:-${FUNCNAME[1]}}"
 
-  $(loggingAt ${_sev}) && echo -e "[${_sev}] ${_facility}: ${_msg}"
+  $(loggingAt ${_sev}) && echo -e "[${_sev}] ${_facility}: ${_msg}" || { [ "$LOGLEVEL" == 'debug' ] && echo -e "[DEBUG] Ignoring log"; }
 }
 
 function logStream(){
@@ -60,12 +61,12 @@ function logStream(){
   local _sev=${2:-${LOGLEVEL}}
   while read logMsg; do
       logger "$logMsg" "$_sev" "$_facility"
+      echo "$logMsg"
   done
 }
 
 # supervise <unitname> your command string 
 function supervise() {
-  SUPERVISE_RESPAWN_INTERVAL=${SUPERVISE_RESPAWN_INTERVAL:-2}
   local _unit=$1
   shift
   local _cmd=$@
@@ -85,3 +86,5 @@ function supervise() {
   done
   logger "Done"
 }
+
+initLogger

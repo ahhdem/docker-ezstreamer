@@ -47,7 +47,7 @@ function initConfig() {
       _stream=${_config:9}
       _config="${_config}.xml"
       # dont overwrite an existing user config (remove it manually first)
-      [ -f /config/${_config} && ! $($OVERWRITE_CONFIG) ] && return
+      [ -f /config/${_config} ] && return
       # Copy untokenized configs from protected area
       cp /etc/ezstream/ezstream.xml ${TMPDIR}/${_config}
       tokenizeConfigForStream $_stream
