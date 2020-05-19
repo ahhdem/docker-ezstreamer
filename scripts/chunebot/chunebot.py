@@ -53,7 +53,7 @@ async def nowPlaying():
                 continue
 
     path_bits=current.split('/')
-    return '/'.join(path_bits[5:])
+    return '/'.join(path_bits[2:])
 
 
 async def skipTo(song='', stream='radio'):
@@ -80,6 +80,10 @@ async def setNextTrack(track):
 async def on_ready():
     print('Logged in as %s (uid: %d)' % (bot.user.name, bot.user.id))
 
+@bot.event
+async def on_message(message):
+    ctx = await bot.get_context(message)
+    await bot.invoke(ctx)
 
 @bot.command()
 async def next(ctx, stream="radio"):
@@ -113,10 +117,10 @@ async def stats(ctx):
     """Gets current stream stats"""
     print("Fetching stats")
     status = await getStreamStatus()
-    creator=status['creator'] if status['creator'] else 'Unknown'
-    title=status['title'] if status['title'] else 'Unknown'
-    listeners=status['Current Listeners'] if status['Current Listeners'] else 'Unknown'
-    bitrate=status['Bitrate'] if status['Current Listeners'] else 'Unknown'
+    creator=status['creator'] if 'creator' in status else 'Unknown'
+    title=status['title'] if 'title' in status else 'Unknown'
+    listeners=status['Current Listeners'] if 'Current Listeners' in status else 'Unknown'
+    bitrate=status['Bitrate'] if 'Bitrate' in status else 'Unknown'
 
     msg = 'Tune in!  STREAM_URL\nNow Playing: {creator} - {title}\nListeners: {listeners}\nQuality: {bitrate}kbps'.format(
         stream='live', #status['stream'],

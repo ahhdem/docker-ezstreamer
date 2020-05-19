@@ -1,5 +1,5 @@
 #!/bin/bash
-. init.sh
+. util.sh
 [ -z "${CHUNEBOT_TOKEN}" ] && { echo "CHUNEBOT_TOKEN is missing"; exit 1; }
 OVERWRITE_CONFIG=${OVERWRITE_CONFIG:-false}
 

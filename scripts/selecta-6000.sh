@@ -27,16 +27,19 @@ function commercial() {
   ! (($(shuf -i 0-100 -n1) % $random_chance))
 }
 
+# choose random playlist from list and random song frmo that
 function selecta() {
   local _playlist=''
-  _playlist="${PLAYLISTS[$RANDOM % ${#PLAYLISTS[@]}]}";
-  commercial && _playlist='commercials';
+  # and sometimeas, commercials, for the lulz.
+  commercial && _playlist='commercials' || _playlist="${PLAYLISTS[$RANDOM % ${#PLAYLISTS[@]}]}";
+  # TODO: fix piping to logger
   # logger "And now, a word from our sponsors..." info >$LOGFIFO;
 
   local _selection=$(shuf ${PLAYLIST_DIR}/${_playlist}.m3u -n 1)
   echo $_selection
 }
 
+# If we have already selected a song using a previous/back command, 
 next=${LOG_ROOT}/next
 [ -e ${next} ] && {
   song=$(cat ${next});
@@ -51,6 +54,7 @@ until [ -e "$song" ] && (file --mime-type "$song" |grep audio >/dev/null); do
   # If song isnt empty (above conditions werent satisfied:
   # Get potential selection
     # Log song to bad song file and init-logger:info
+    # TODO: fix piping to logger
     #[ -n "$song" ] && logger $(echo "Skipping 'unplayable' $song" |tee $BAD_SONG_LOG) info >$LOGFIFO
     [ -n "$song" ] && echo "Skipping 'unplayable' $song" >> $BAD_SONG_LOG
   candidate=$(selecta)
@@ -63,6 +67,7 @@ until [ -e "$song" ] && (file --mime-type "$song" |grep audio >/dev/null); do
   song="${MEDIA_DIR}/${candidate}"
 done
 
+# TODO: fix piping to logger
 #logger "Selected: ${song}" info >$LOGFIFO
 now_playing=${LOG_ROOT}/now-playing
 [ -e $now_playing ] && cp $now_playing ${LOG_ROOT}/previous
