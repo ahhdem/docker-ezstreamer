@@ -1,13 +1,7 @@
 #!/bin/bash
+. init.sh
 [ -z "${CHUNEBOT_TOKEN}" ] && { echo "CHUNEBOT_TOKEN is missing"; exit 1; }
-TMPDIR=$(mktemp -d)
 OVERWRITE_CONFIG=${OVERWRITE_CONFIG:-false}
-
-function cleanup() {
-  rm -rf $TMPDIR
-}
-
-trap cleanup EXIT
 
 function tokenizeConfigForStream() {
   local _stream=$(echo $1|tr '[:lower:]' '[:upper:]')

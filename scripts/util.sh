@@ -1,18 +1,9 @@
 DEBUG=${DEBUG:-true}
-TMPDIR=$(mktemp -d)
 LOG_ROOT=${LOG_ROOT:-/var/log/ezstreamer}
 LOGLEVEL=${LOGLEVEL:-info}
 LOGFIFO="${LOGFIFO:-${TMPDIR}/init-logger.fifo}"
 SUPERVISE_RESPAWN_INTERVAL=${SUPERVISE_RESPAWN_INTERVAL:-2}
 LOGLEVELS=("debug" "info" "warn" "error")
-
-function cleanup() {
-  rm -rf $TMPDIR
-  rm -rf /tmp/pids/
-  [ "$(type -t local_cleanup)" == 'function' ] && local_cleanup
-}
-
-trap cleanup EXIT
 
 function indexOf() {
   local _key=$1
@@ -86,5 +77,3 @@ function supervise() {
   done
   logger "Done"
 }
-
-initLogger

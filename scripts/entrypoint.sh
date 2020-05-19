@@ -1,12 +1,14 @@
 #!/bin/bash
-. /util.sh
+TMPDIR=$(mktemp -d)     # Set TMPDIR for entrypoint process
+. /util.sh              # Import utility functions
+initLogger              # Initilize logfolders/files and fifo
+tail -f $LOGFIFO&       # Watch fifo for logs
 # Capture logs from other scripts (selecta-6000.sh)
-echo "Logging to ${LOG_ROOT}"
-tail -f $LOGFIFO&
 [ -d /tmp/pids ] || ln -s $TMPDIR/ /tmp/pids
 
 function local_cleanup() {
-  rm -rf /tmp/pids/
+  rm -rf  ${TMPDIR}
+  unlink /tmp/pids
 }
 
 trap local_cleanup EXIT
@@ -28,9 +30,9 @@ function ezstreamer() {
   tail -f ${LOGS['repair']}&
 
   for stream in $AUTOSTREAMS; do
-    supervise $stream ezstream -c /config/ezstream-${stream}.xml | tee| logStream $stream info&
+    supervise $stream ezstream -c /config/ezstream-${stream}.xml & #| tee| logStream $stream info&
   done
-  $($USE_CHUNEBOT) && supervise chunebot python3 /chunebot/chunebot.py | logStream chunebot info&
+  $($USE_CHUNEBOT) && supervise chunebot python3 /chunebot/chunebot.py &#| tee |logStream chunebot info&
 }
 
 function invalid() {
@@ -67,7 +69,7 @@ function fixBadSongs() {
   done
 }
 
-logger "Running as: $(id)"
+#logger "Running as: $(id)"
 /tokenize.sh
 ezstreamer
 streams=($AUTOSTREAMS)

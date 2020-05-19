@@ -1,5 +1,6 @@
 #!/bin/bash
 . util.sh
+exec 2> ${LOG_ROOT}/playlist.err
 FALLBACK_STREAM=${FALLBACK_STREAM:-brb}
 PLAYLISTS=($STREAM_RADIO_PLAYLISTS)
 MEDIA_DIR=${MEDIA_DIR:-/media}

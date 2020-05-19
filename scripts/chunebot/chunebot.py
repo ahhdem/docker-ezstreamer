@@ -6,6 +6,8 @@ from subprocess import run
 from urllib import request
 from xmltodict import parse as xmlparse
 
+debug = True
+LOG_ROOT = '/var/log/ezstreamer'
 description = '''An example bot to showcase the discord.ext.commands extension
 module.
 
@@ -43,7 +45,12 @@ async def getStreamStatus():
 async def nowPlaying():
     current = ''
     while current == '':
-        current = run(['/bin/cat', '/config/now-playing'], capture_output=True, text=True).stdout
+        with open('%s/now-playing' % LOG_ROOT , 'r') as f:
+            x = f.readlines()
+            try:
+                current = x[0]
+            except:
+                continue
 
     path_bits=current.split('/')
     return '/'.join(path_bits[5:])
@@ -66,7 +73,7 @@ async def skipTo(song='', stream='radio'):
 
 
 async def setNextTrack(track):
-    run(['cp','/config/%s' % track, '/config/next'])
+    run(['cp','%s/%s' % [LOG_ROOT, track], '%s/next' % LOG_ROOT])
     return True
 
 @bot.event
@@ -106,12 +113,17 @@ async def stats(ctx):
     """Gets current stream stats"""
     print("Fetching stats")
     status = await getStreamStatus()
+    creator=status['creator'] if status['creator'] else 'Unknown'
+    title=status['title'] if status['title'] else 'Unknown'
+    listeners=status['Current Listeners'] if status['Current Listeners'] else 'Unknown'
+    bitrate=status['Bitrate'] if status['Current Listeners'] else 'Unknown'
+
     msg = 'Tune in!  STREAM_URL\nNow Playing: {creator} - {title}\nListeners: {listeners}\nQuality: {bitrate}kbps'.format(
-            stream='live', #status['stream'],
-            creator=status['creator'],
-            title=status['title'],
-            listeners=status['Current Listeners'],
-            bitrate=status['Bitrate'])
+        stream='live', #status['stream'],
+        creator=creator,
+        title=title,
+        listeners=listeners,
+        bitrate=bitrate)
 
     await ctx.send(msg)
 

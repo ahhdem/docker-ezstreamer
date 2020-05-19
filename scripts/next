@@ -1,6 +1,9 @@
 #!/bin/bash
+. util.sh 
+LOG_ROOT=${LOG_ROOT:-/var/log/ezstreamer}
+exec 2> ${LOG_ROOT}/playlist.err
 
-stream=$1
+stream=${1:-radio}
 
 [ -n "$stream" ] && {
    kill -SIGUSR1 $(cat /tmp/pids/${stream}.pid)
