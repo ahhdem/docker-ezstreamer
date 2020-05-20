@@ -8,17 +8,20 @@ function tokenizeConfigForStream() {
   local _stream=$(echo $1|tr '[:lower:]' '[:upper:]')
   local _config="ezstream-${stream}.xml"
 
+  echo "Tokenizing $_config"
+
   # Define STREAM_$key variables from stream vars
   for _key in HOST PASSWORD MOUNT NAME URL GENRE DESCRIPTION PLAYLISTS; do
     local _src="STREAM_${_stream}_${_key}"
     local _dst="STREAM_${_key}"
     # Copy _src var contents to _dst var
     # Fallback to _src (STREAM_${_key}) if no stream-specific entry is present
-    # Sed is to sanitze values for later sed
+    # Sed is to sanitze values for later sed - via https://stackoverflow.com/questions/407523/escape-a-string-for-a-sed-replace-pattern
+    # more: https://stackoverflow.com/questions/29613304/is-it-possible-to-escape-regex-metacharacters-reliably-with-sed
     declare "STREAM_${_key}=$(sed -e 's/[]\/$*.^[]/\\&/g' <<< ${!_src:-${!_dst}})"
     [ -z "${!_dst}" ] && { echo "${_dst} variable undefined for $_stream"; exit 1; }
   done
- 
+
   # Tokenize config
   sed -i'' \
     -e "s/STREAM_HOST/${STREAM_HOST}/g" \

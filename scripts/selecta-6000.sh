@@ -13,6 +13,9 @@ STREAMER=${1:-$(ps -o cmd= $(ps -o ppid= $PPID)|cut -d\- -f 3|cut -d. -f1)}
 PLAYLIST_VAR="STREAM_${STREAMER^^}_PLAYLISTS"
 #echo "Computed $PLAYLIST_VAR for $STREAMER_CMD" >> ${LOG_ROOT}/playlist.err
 PLAYLISTS=(${!PLAYLIST_VAR})
+SONG_LOG="${LOG_ROOT}/playlist.${STREAMER}.log"
+NOW_PLAYING=${LOG_ROOT}/now-playing-${STREAMER}
+[ -e $NOW_PLAYING ] && cp $NOW_PLAYING ${LOG_ROOT}/previous-${STREAMER}
 
 # randomly play commercials 10 percent of the time
 function commercial() {
@@ -34,7 +37,17 @@ function selecta() {
   echo $_selection
 }
 
-# If we have already selected a song using a previous/back command, 
+function now_playing(){
+  local _song="$1"
+
+  # TODO: fix piping to logger
+  #logger "Selected: ${song}" info >$LOGFIFO
+  echo  "$(date '+%Y-%m-%d %T %Z') ${_song}"  >>${SONG_LOG}
+  echo "${_song}" |tee $NOW_PLAYING
+
+}
+
+# If we have already selected a song using a previous/back command,
 next=${LOG_ROOT}/next
 [ -e ${next} ] && {
   song=$(cat ${next});
@@ -62,8 +75,4 @@ until [ -e "$song" ] && (file --mime-type "$song" |grep audio >/dev/null); do
   song="${MEDIA_DIR}/${candidate}"
 done
 
-# TODO: fix piping to logger
-#logger "Selected: ${song}" info >$LOGFIFO
-now_playing=${LOG_ROOT}/now-playing-${STREAMER}
-[ -e $now_playing ] && cp $now_playing ${LOG_ROOT}/previous-${STREAMER}
-echo "${song}" |tee $now_playing
+now_playing "$song"
