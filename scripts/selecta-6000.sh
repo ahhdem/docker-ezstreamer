@@ -48,9 +48,9 @@ function now_playing(){
 }
 
 # If we have already selected a song using a previous/back command,
-next=${LOG_ROOT}/next
+next=${LOG_ROOT}/next-${STREAMER}
 [ -e ${next} ] && {
-  song=$(cat ${next});
+  song="$(cat ${next})";
   rm -f ${next};
 }
 
